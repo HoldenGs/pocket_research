@@ -32,7 +32,7 @@ imitation_learning/
 - Format: Numpy array with shape (N, 3)
   - Column 0: Timestamp (seconds)
   - Column 1: Steering value (normalized between -1 and 1)
-  - Column 2: Throttle value (normalized between 0 and 1)
+  - Column 2: Throttle value (should be normalized between 0 and 1, but currently has a zero value around 0.5 and a max positive throttle of 1.5)
 
 ## Usage
 
