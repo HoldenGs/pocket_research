@@ -34,6 +34,8 @@ imitation_learning/
   - Column 1: Steering value (normalized between -1 and 1)
   - Column 2: Throttle value (should be normalized between 0 and 1, but currently has a zero value around 0.5 and a max positive throttle of 1.5)
 
+You should tune the values for yourself as they may not be perfectly normalized, and could have different values for each racer.
+
 ## Usage
 
 ### 1. Data Collection
