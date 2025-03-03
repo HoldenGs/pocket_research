@@ -1,0 +1,31 @@
+{
+    "camera_id": 0,
+    "frame_width": 640,
+    "frame_height": 480,
+    "fps": 30,
+    "control_hz": 50,
+    "max_seconds_per_video": 60,
+    "video_dir": "data/videos",
+    "control_data_path": "data/control_signals.npy",
+    
+    "model": {
+        "backbone": "resnet18",
+        "pretrained": true,
+        "learning_rate": 0.001,
+        "batch_size": 32,
+        "num_epochs": 20,
+        "train_split": 0.7,
+        "val_split": 0.15,
+        "test_split": 0.15
+    },
+    
+    "augmentation": {
+        "enabled": true,
+        "brightness": 0.2,
+        "contrast": 0.2,
+        "saturation": 0.2,
+        "hue": 0.1,
+        "random_crop": false,
+        "random_flip": false
+    }
+}
