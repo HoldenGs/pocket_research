@@ -65,12 +65,28 @@ deactivate
 
 ### Running the Controller
 
+
 1. **On the DeepRacer (Racer):**
+   When running on the DeepRacer, ensure you're logged in as root and source the following files:
+   ```bash
+   source /opt/ros/foxy/setup.bash
+   source ~/deepracer_ws/aws-deepracer-interfaces-pkg/install/setup.bash
+   ```
+   If you don't have aws-deepracer-interfaces-pkg installed, follow the instructions on the package's GitHub page: https://github.com/aws-deepracer/aws-deepracer-interfaces-pkg
+
+   By default, the DeepRacer also runs a node that takes control of the USB video camera. We want to kill that process by finding it with lsof:
+   ```bash
+   lsof /dev/video0 # or video1 sometimes
+   ```
+   ```bash
+   kill <pid of offending process>
+   ```
+   Now, you're ready to start the controller:
    ```bash
    python controller_racer.py
    ```
 
-2. **On your computer (Local):**
+3. **On your computer (Local):**
    ```bash
    python controller_local.py <racer_ip_address>
    ```
