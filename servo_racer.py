@@ -3,11 +3,13 @@ import rclpy, time
 import socket
 import json
 import threading
+import cv2
 from rclpy.node import Node
 from deepracer_interfaces_pkg.msg import ServoCtrlMsg
 
 # Constants
-IDLE_THROTTLE = 0.50
+IDLE_THROTTLE = 0.0
+
 
 class SimpleController(Node):
     def __init__(self):
@@ -19,7 +21,7 @@ class SimpleController(Node):
         self.angle = 0.0
         self.throttle = IDLE_THROTTLE
         
-        # UDP server setup
+        # UDP controller server setup
         self.server_ip = '0.0.0.0'  # Listen on all network interfaces
         self.server_port = 9999
         self.client_addr = None
@@ -59,8 +61,11 @@ class SimpleController(Node):
         """Listen for UDP control commands."""
         self.get_logger().info("UDP listener started and waiting for messages")
         while True:
+            
             try:
                 data, addr = self.udp_socket.recvfrom(1024)
+                if not data:
+                    break
                 
                 # Remember client address for potential responses
                 if self.client_addr != addr:

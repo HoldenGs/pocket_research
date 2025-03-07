@@ -6,9 +6,11 @@ import threading
 import time
 import signal
 from pynput import keyboard
+import cv2
+import numpy as np
 
 # Constants
-IDLE_THROTTLE = 0.50
+IDLE_THROTTLE = 0.0
 
 class RemoteController:
     def __init__(self, server_ip, server_port=9999):
@@ -52,7 +54,7 @@ class RemoteController:
         self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # Set socket timeout for receive operations
         self.udp_socket.settimeout(1.0)
-        
+    
     def start(self):
         """Start the controller."""
         print(f"Connecting to DeepRacer controller at {self.server_ip}:{self.server_port}")
@@ -67,7 +69,7 @@ class RemoteController:
         # Send initial ping to test connection
         self.ping_server()
         
-        # Start the keyboard listener and command sender
+        # Start the keyboard listener and threads
         self.listener.start()
         self.sender_thread.start()
         self.receiver_thread.start()
@@ -152,7 +154,7 @@ class RemoteController:
         """Update control values based on key states."""
         # Handle throttle (W/S keys)
         if self.key_w_pressed and not self.key_s_pressed:
-            self.throttle = 1.5
+            self.throttle = 1.0
         elif self.key_s_pressed and not self.key_w_pressed:
             self.throttle = -1.0
         else:
