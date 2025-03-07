@@ -1,104 +1,212 @@
-# RC Car Imitation Learning Pipeline
+# DeepRacer Imitation Learning Controller
 
-This repository contains an imitation learning pipeline for training an RC car to mimic human driving behavior using video data and control signals.
+A combined controller interface and data collection system for training imitation learning models with AWS DeepRacer.
 
 ## Overview
 
-The system uses:
-- Video data from the RC car's camera
-- Control signal data (steering and throttle)
-- A deep learning model to predict control signals from video frames
+This project provides a unified control interface for DeepRacer that combines:
 
-## Directory Structure
+1. **Unified Controller** - Combined servo control and video streaming
+2. **Interactive UI** - Real-time visualization of control inputs and video feed
+3. **Imitation Learning Data Collection** - Automated recording of driving data
 
-```
-imitation_learning/
-├── data/                    # Data directory
-│   ├── videos/              # Video files
-│   └── control_signals.npy  # Control signal data
-├── models/                  # Saved models
-├── imitation_learning.py    # Main implementation
-└── README.md                # This file
-```
+The system consists of two main components:
 
-## Data Format
+- **controller_local.py**: Runs on your computer, handles keyboard inputs and video display
+- **controller_racer.py**: Runs on the DeepRacer, handles motor control and video streaming
 
-### Video Data
-- Video files should be stored in the `data/videos/` directory
-- File naming convention: `<timestamp>.mp4` or `<timestamp>.avi`
+## Getting Started
 
-### Control Signal Data
-- Control signals should be stored in `data/control_signals.npy`
-- Format: Numpy array with shape (N, 3)
-  - Column 0: Timestamp (seconds)
-  - Column 1: Steering value (normalized between -1 and 1)
-  - Column 2: Throttle value (should be normalized between -1 and 1, but currently has a zero value around 0.5 and a max positive throttle of 1.5)
-
-You should tune the values for yourself as they may not be perfectly normalized, and could have different values for each racer.
-
-## Usage
-
-### 1. Data Collection
-
-Collect video data and control signals:
-- Record video feed from the RC car
-- Record corresponding control signals with timestamps
-- Ensure synchronization between video and control data
-
-### 2. Training
-
-Run the main script:
-
-```bash
-python imitation_learning.py
-```
-
-The script will:
-1. Process the video files and match frames with control signals
-2. Split the dataset into training, validation, and test sets
-3. Train the model and save it to `models/rc_car_model.pth`
-4. Evaluate the model and save performance graphs
-
-### 3. Real-time Inference
-
-For deploying the trained model on the RC car:
-
-```python
-from imitation_learning import RealTimeInference
-
-# Create inference object
-inference = RealTimeInference('models/rc_car_model.pth')
-
-# Run inference loop
-inference.run()
-```
-
-## Model Architecture
-
-The model uses a ResNet18 backbone with a custom regression head:
-- Feature extraction: Pre-trained ResNet18
-- Control head: MLP with 2 outputs (steering and throttle)
-
-## Requirements
+### Prerequisites
 
 - Python 3.6+
-- PyTorch
-- torchvision
-- numpy
-- OpenCV (cv2)
-- matplotlib
-- tqdm
+- OpenCV
+- NumPy
+- pynput (for keyboard control)
+- AWS DeepRacer with ROS2 setup
 
-Install requirements:
+### Installation
+
+Clone this repository and install the required dependencies:
 
 ```bash
-pip install torch torchvision numpy opencv-python matplotlib tqdm
+git clone https://github.com/yourusername/pocket_racers.git
+cd pocket_racers/imitation_learning
 ```
 
-## Future Improvements
+#### Virtual Environment Setup (Recommended)
 
-- Data augmentation for improved generalization
-- Model distillation for faster inference
-- Integration with ROS for robotic control
-- Support for action branching (different scenarios)
-- Online learning capabilities
+It's recommended to use a virtual environment to avoid conflicts with other Python packages:
+
+```bash
+# Create a virtual environment
+python -m venv pocket_research_env
+
+# Activate the virtual environment
+# On Windows:
+pocket_research_env\Scripts\activate
+# On macOS/Linux:
+source pocket_research_env/bin/activate
+```
+
+Once the virtual environment is activated, install the dependencies:
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+```
+
+Your terminal prompt should change to indicate that the virtual environment is active. When you're done working on the project, you can deactivate the virtual environment:
+
+```bash
+deactivate
+```
+
+### Running the Controller
+
+1. **On the DeepRacer (Racer):**
+   ```bash
+   python controller_racer.py
+   ```
+
+2. **On your computer (Local):**
+   ```bash
+   python controller_local.py <racer_ip_address>
+   ```
+   Replace `<racer_ip_address>` with the IP address of your DeepRacer.
+
+## Controller Usage
+
+### Keyboard Controls
+
+| Key | Function |
+|-----|----------|
+| W | Forward throttle (up to limit) |
+| S | Reverse throttle (up to limit) |
+| A | Left steering (up to limit) |
+| D | Right steering (up to limit) |
+| UP | Increase throttle limit (+0.2) |
+| DOWN | Decrease throttle limit (-0.2) |
+| LEFT | Decrease steering limit (-0.2) |
+| RIGHT | Increase steering limit (+0.2) |
+| V | Toggle video display |
+| R | Toggle data recording |
+| ESC | Exit |
+
+### Adjustable Limits
+
+The controller provides adjustable limits for both throttle and steering:
+
+- **Throttle Limit**: Controls maximum forward/reverse speed (0.0 to 1.0)
+- **Steering Limit**: Controls maximum turning angle (0.0 to 1.0)
+
+Use the arrow keys to adjust these limits in increments of 0.2.
+
+### UI Elements
+
+The UI is divided into three main sections:
+
+1. **Left Panel**:
+   - Connection status
+   - Server information
+   - Control reference
+
+2. **Center Panel**:
+   - Throttle visualization and current value
+   - Throttle limit indicator
+
+3. **Right Panel**:
+   - Steering visualization and current value
+   - Steering limit indicator
+
+A recording indicator appears in the top-right corner when data collection is active.
+
+## Data Collection
+
+### Recording Sessions
+
+Press the `R` key to toggle recording on and off. Each recording session is stored in a timestamped directory:
+
+```
+data/session_YYYYMMDD_HHMMSS/
+```
+
+### Data Format
+
+The data is stored in an efficient video format, along with synchronized control signals:
+
+```
+session_YYYYMMDD_HHMMSS/
+├── video.mp4            # Video recording of frames
+├── control_data.json    # Control signals with timestamps and frame indices
+├── metadata.json        # Recording session metadata
+└── dataset.json         # Prepared dataset for training
+```
+
+### Preparing Training Data
+
+The system includes tools to prepare the data for training:
+
+```python
+from data_collector import prepare_training_data
+
+# Basic usage - references frames in the video file
+prepare_training_data("data/session_YYYYMMDD_HHMMSS")
+
+# Extract frames as individual images
+prepare_training_data("data/session_YYYYMMDD_HHMMSS", extract_frames=True)
+
+# Limit to a maximum number of samples
+prepare_training_data("data/session_YYYYMMDD_HHMMSS", max_samples=1000)
+
+# Save extracted frames to a custom directory
+prepare_training_data("data/session_YYYYMMDD_HHMMSS", 
+                      extract_frames=True, 
+                      output_dir="my_training_data")
+```
+
+## Imitation Learning Integration
+
+The collected data is specifically formatted for imitation learning pipelines:
+
+1. Each control signal is precisely matched with its corresponding video frame
+2. The dataset includes timestamps, frame indices, throttle, and steering values
+3. Frames can be referenced directly in the video file or extracted as needed
+
+For frameworks that require individual image files, use `extract_frames=True` when preparing the data.
+
+## Advanced Configuration
+
+### Video Settings
+
+To customize video recording, modify the `DataCollector` initialization:
+
+```python
+from data_collector import DataCollector
+
+# Custom settings
+collector = DataCollector(
+    base_dir="data",      # Base directory for storing data
+    fps=30,               # Video frame rate
+    video_format="mp4",   # Video format (mp4, avi)
+    video_codec="avc1"    # Video codec (avc1, XVID, MJPG)
+)
+```
+
+## Troubleshooting
+
+### Video Display Issues
+
+- On macOS, OpenCV UI must run in the main thread
+- If video appears blocky, try reducing resolution on the racer side
+- For low latency, ensure good network connection between computer and racer
+
+### Controller Connection Issues
+
+- Verify the IP address is correct
+- Check that ports 9999 (control) and 5005 (video) are not blocked
+- Press 'C' to check connection status
+
+## License
+
+[MIT License](LICENSE)
