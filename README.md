@@ -1,6 +1,6 @@
-# DeepRacer Imitation Learning Controller
+# DeepRacer Imitation Learning
 
-A combined controller interface and data collection system for training imitation learning models with AWS DeepRacer.
+This project contains the necessary components to run the DeepRacer, record data, and train a model to mimic human behavior on the DeepRacer using imitation learning. Currently, the imitation learning pipeline has not been completed, but the controller is in a working state.
 
 ## Overview
 
@@ -8,9 +8,10 @@ This project provides a unified control interface for DeepRacer that combines:
 
 1. **Unified Controller** - Combined servo control and video streaming
 2. **Interactive UI** - Real-time visualization of control inputs and video feed
-3. **Imitation Learning Data Collection** - Automated recording of driving data
+3. **Data Collection** - Automated recording of driving data
+4. **Imitation Learning Trainer** - Trainer for imitation learning model on collected data
 
-The system consists of two main components:
+The controller system consists of two main components:
 
 - **controller_local.py**: Runs on your computer, handles keyboard inputs and video display
 - **controller_racer.py**: Runs on the DeepRacer, handles motor control and video streaming
@@ -46,7 +47,7 @@ python -m venv pocket_research_env
 # On Windows:
 pocket_research_env\Scripts\activate
 # On macOS/Linux:
-source pocket_research_env/bin/activate
+source ./pocket_research_env/bin/activate
 ```
 
 Once the virtual environment is activated, install the dependencies:
@@ -77,8 +78,6 @@ deactivate
 
 ## Controller Usage
 
-### Keyboard Controls
-
 | Key | Function |
 |-----|----------|
 | W | Forward throttle (up to limit) |
@@ -92,34 +91,6 @@ deactivate
 | V | Toggle video display |
 | R | Toggle data recording |
 | ESC | Exit |
-
-### Adjustable Limits
-
-The controller provides adjustable limits for both throttle and steering:
-
-- **Throttle Limit**: Controls maximum forward/reverse speed (0.0 to 1.0)
-- **Steering Limit**: Controls maximum turning angle (0.0 to 1.0)
-
-Use the arrow keys to adjust these limits in increments of 0.2.
-
-### UI Elements
-
-The UI is divided into three main sections:
-
-1. **Left Panel**:
-   - Connection status
-   - Server information
-   - Control reference
-
-2. **Center Panel**:
-   - Throttle visualization and current value
-   - Throttle limit indicator
-
-3. **Right Panel**:
-   - Steering visualization and current value
-   - Steering limit indicator
-
-A recording indicator appears in the top-right corner when data collection is active.
 
 ## Data Collection
 
@@ -167,7 +138,7 @@ prepare_training_data("data/session_YYYYMMDD_HHMMSS",
 
 ## Imitation Learning Integration
 
-The collected data is specifically formatted for imitation learning pipelines:
+The collected data is specifically formatted for an imitation learning trainer:
 
 1. Each control signal is precisely matched with its corresponding video frame
 2. The dataset includes timestamps, frame indices, throttle, and steering values
@@ -199,13 +170,22 @@ collector = DataCollector(
 
 - On macOS, OpenCV UI must run in the main thread
 - If video appears blocky, try reducing resolution on the racer side
-- For low latency, ensure good network connection between computer and racer
+- If high latency is persistent, consider modifying the DeepRacer to run on your phone's hotspot by using the USB configuration method
 
 ### Controller Connection Issues
 
 - Verify the IP address is correct
 - Check that ports 9999 (control) and 5005 (video) are not blocked
 - Press 'C' to check connection status
+
+## Future Improvements
+
+- Data augmentation for improved generalization
+- Model distillation for faster inference
+- Integration with ROS for robotic control
+- Support for action branching (different scenarios)
+- Online learning capabilities
+
 
 ## License
 
