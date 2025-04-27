@@ -7,7 +7,10 @@ import time
 import cv2
 import numpy as np
 from rclpy.node import Node
-from deepracer_interfaces_pkg.msg import ServoCtrlMsg
+from deepracer_interfaces_pkg.msg import ServoCtrlMsg, CameraMsg
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
+from rclpy.qos import qos_profile_sensor_data
 
 # Constants
 IDLE_THROTTLE = 0.0
@@ -37,6 +40,14 @@ class CombinedRacerController(Node):
         self.video_client_addr = None
         self.video_enabled = False
         self.camera_device = 0  # Default camera device
+        # Subscribe to custom CameraMsg that wraps raw Image[] frames
+        self.bridge = CvBridge()
+        self.image_sub = self.create_subscription(
+            CameraMsg,
+            '/camera_pkg/video_mjpeg',
+            self.camera_msg_callback,
+            qos_profile_sensor_data)
+        self.last_frame_time = 0.0
         
         # Print server IP for user reference
         self.get_logger().info(f'UDP control server started on all interfaces (0.0.0.0):{self.server_port}')
@@ -75,23 +86,11 @@ class CombinedRacerController(Node):
             return False
             
         try:
-            # Set up video socket just like the original implementation
+            # Set up UDP socket and enable streaming via ROS image topic
             self.video_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.video_client_addr = (client_addr[0], VIDEO_PORT)
-            
-            # Try to open the camera
-            self.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-            if not self.cap.isOpened():
-                self.get_logger().error(f"Failed to open camera device {self.camera_device}")
-                return False
-                
-            # Start video streaming thread
             self.video_enabled = True
-            self.video_thread = threading.Thread(target=self.video_sender)
-            self.video_thread.daemon = True
-            self.video_thread.start()
-            
-            self.get_logger().info(f"Video streaming started to {self.video_client_addr}")
+            self.get_logger().info(f"Video streaming enabled to {self.video_client_addr} via ROS image topic")
             return True
         except Exception as e:
             self.get_logger().error(f"Error setting up video streaming: {str(e)}")
@@ -145,36 +144,31 @@ class CombinedRacerController(Node):
             except Exception as e:
                 self.get_logger().error(f'UDP receive error: {str(e)}')
 
-    def video_sender(self):
-        """Thread that captures and sends video frames to the client."""
-        self.get_logger().info("Starting video streaming thread")
-        
-        # Simple implementation similar to the original video_sender.py
-        while rclpy.ok() and self.video_enabled:
-            try:
-                # Capture frame from camera - just like the original code
-                ret, frame = self.cap.read()
-                if not ret:
-                    self.get_logger().warning("Failed to capture frame from camera")
-                    time.sleep(0.1)  # Wait a bit before trying again
-                    continue
-                
-                # Compress frame to JPEG - match original code's simplicity
-                ret, buf = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), VIDEO_QUALITY])
-                if not ret:
-                    self.get_logger().warning("Failed to encode frame")
-                    continue
-                
-                # Send frame to client - simple send like the original
-                data = buf.tobytes()
-                self.video_socket.sendto(data, self.video_client_addr)
-                
-                # Brief sleep to control frame rate
-                time.sleep(1.0/VIDEO_FPS)
-                
-            except Exception as e:
-                self.get_logger().error(f"Error in video streaming: {str(e)}")
-                time.sleep(0.1)  # Wait a bit before trying again
+    def camera_msg_callback(self, msg):
+        """Convert first raw Image in CameraMsg to JPEG and send over UDP."""
+        if not self.video_enabled or not self.video_client_addr:
+            return
+        try:
+            now = time.time()
+            if now - self.last_frame_time < 1.0 / VIDEO_FPS:
+                return
+            self.last_frame_time = now
+
+            # CameraMsg contains a list of raw sensor_msgs/Image
+            if not msg.images:
+                return
+            raw_img = msg.images[0]
+            # Convert to OpenCV BGR image
+            cv_img = self.bridge.imgmsg_to_cv2(raw_img, desired_encoding='bgr8')
+            # JPEG-encode
+            ret, buf = cv2.imencode('.jpg', cv_img, [int(cv2.IMWRITE_JPEG_QUALITY), VIDEO_QUALITY])
+            if not ret:
+                self.get_logger().warning("Failed to encode frame")
+                return
+            # Send encoded frame via UDP
+            self.video_socket.sendto(buf.tobytes(), self.video_client_addr)
+        except Exception as e:
+            self.get_logger().error(f"Error in camera_msg_callback: {e}")
 
     def timer_callback(self):
         """Publish control commands to ROS2 at regular intervals."""
@@ -191,9 +185,6 @@ class CombinedRacerController(Node):
         if hasattr(self, 'video_enabled'):
             self.video_enabled = False
         
-        if hasattr(self, 'cap') and self.cap:
-            self.cap.release()
-            
         if hasattr(self, 'video_socket'):
             self.video_socket.close()
             
