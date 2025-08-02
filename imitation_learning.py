@@ -10,6 +10,9 @@ import cv2
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
+
+# PEP8: two blank lines above top-level definitions
+
 class RCCarDataset(Dataset):
     def __init__(self, video_dir, control_data_path, transform=None):
         """
@@ -64,9 +67,24 @@ class RCCarDataset(Dataset):
                 
                 self.last_control_idx = idx
                 control_signal = self.control_data[idx, 1:3]
+
+                # ------------------------------------------------------------
+                # Skip idle frames (no steering & no throttle)
+                # Empirically, values exactly equal to 0.0 indicate periods
+                # before/after active driving when the operator is not sending
+                # commands.  Including these overwhelms the dataset and teaches
+                # the model to predict zeros.  We therefore discard frames
+                # whose absolute steering *and* throttle are below a small
+                # threshold.
+                # ------------------------------------------------------------
+                if np.all(np.abs(control_signal) < 1e-3):
+                    frame_idx += 1
+                    continue  # Skip this pair and move to next frame
+
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                
+
                 self.frames.append(frame)
+                # Store as plain list to avoid 2-D slices holding reference
                 self.controls.append(control_signal)
                 
                 frame_idx += 1
@@ -90,8 +108,18 @@ class RCCarModel(nn.Module):
         """CNN model for predicting control signals from images"""
         super(RCCarModel, self).__init__()
         
-        # Use ResNet18 as backbone, modified for regression
-        resnet = models.resnet18(pretrained=True)
+        # Use ResNet18 as backbone. The older `pretrained` flag is deprecated
+        # and triggers a weight download that can fail without proper SSL
+        # certificates or an internet connection.
+        #
+        # We therefore default to `weights=None` (random initialization).
+
+        if os.getenv("IML_PRETRAINED") == "1":
+            from torchvision.models import ResNet18_Weights
+
+            resnet = models.resnet18(weights=ResNet18_Weights.DEFAULT)
+        else:
+            resnet = models.resnet18(weights=None)
         
         # Replace final FC layer
         num_features = resnet.fc.in_features
@@ -111,6 +139,12 @@ class RCCarModel(nn.Module):
         features = self.backbone(x)
         control = self.control_head(features)
         return control
+
+
+# ---------------------------------------------------------------------------
+# Training / evaluation helpers
+# ---------------------------------------------------------------------------
+
 
 def train_model(model, train_loader, val_loader, num_epochs=10, lr=0.001):
     """Train the imitation learning model"""
@@ -274,7 +308,30 @@ class RealTimeInference:
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             cv2.putText(frame, f"Throttle: {throttle:.4f}", (10, 70), 
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-            
+
+            # ------------------------------------------------------------------
+            # Visual signal bars
+            # Map steering (−1..1) to bar across screen width (red = left, blue = right)
+            h, w = frame.shape[:2]
+            bar_y = h - 40  # vertical position of the bar
+            # Background bar
+            cv2.rectangle(frame, (0, bar_y - 10), (w, bar_y + 10), (50, 50, 50), -1)
+
+            # Steering bar (center = 0)
+            steer_pos = int((steering + 1) / 2 * w)
+            bar_color = (0, 0, 255) if steering < 0 else (255, 0, 0)
+            cv2.rectangle(frame,
+                          (min(steer_pos, w // 2), bar_y - 10),
+                          (max(steer_pos, w // 2), bar_y + 10),
+                          bar_color, -1)
+
+            # Throttle bar (height proportional)
+            throttle_height = int(abs(throttle) * 100)
+            throt_x = w - 60
+            cv2.rectangle(frame, (throt_x, h - 10 - throttle_height),
+                          (throt_x + 40, h - 10),
+                          (0, 255, 0) if throttle >= 0 else (0, 128, 255), -1)
+
             cv2.imshow('RC Car Imitation Learning', frame)
             
             if cv2.waitKey(1) & 0xFF == ord('q'):

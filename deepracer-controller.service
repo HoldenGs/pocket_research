@@ -1,0 +1,26 @@
+[Unit]
+Description=DeepRacer Controller Service
+After=network.target multi-user.target
+Wants=network.target
+
+[Service]
+Type=exec
+User=root
+Group=root
+WorkingDirectory=/home/deepracer/deepracer_ws/imitation_learning
+ExecStart=/home/deepracer/deepracer_ws/imitation_learning/start_controller_racer.sh
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Environment variables
+Environment=HOME=/home/deepracer
+Environment=ROS_DOMAIN_ID=0
+
+# Graceful shutdown
+TimeoutStopSec=30
+KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target 

@@ -35,27 +35,36 @@ git clone https://github.com/yourusername/pocket_racers.git
 cd pocket_racers/imitation_learning
 ```
 
-#### Virtual Environment Setup (Recommended)
+#### Environment Setup (using [`uv`](https://github.com/astral-sh/uv))
 
-It's recommended to use a virtual environment to avoid conflicts with other Python packages:
-
-```bash
-# Create a virtual environment
-python -m venv pocket_research_env
-
-# Activate the virtual environment
-# On Windows:
-pocket_research_env\Scripts\activate
-# On macOS/Linux:
-source ./pocket_research_env/bin/activate
-```
-
-Once the virtual environment is activated, install the dependencies:
+`uv` is a super-fast drop-in replacement for **pip**/
+**virtualenv** that also handles dependency resolution. If you
+haven’t installed it yet:
 
 ```bash
-# Install dependencies
-pip install -r requirements.txt
+curl -Ls https://astral.sh/uv/install.sh | sh
 ```
+
+Create and activate an isolated environment:
+
+```bash
+# Create a local .venv directory
+uv venv .venv
+
+# Activate the virtual environment (macOS / Linux)
+source .venv/bin/activate
+# On Windows (PowerShell)
+.venv\Scripts\Activate.ps1
+```
+
+Install the project dependencies:
+
+```bash
+uv pip install -r requirements.txt
+```
+
+If you prefer the standard tooling, you can still use `python -m venv` and
+`pip install -r requirements.txt` – the dependencies are the same.
 
 Your terminal prompt should change to indicate that the virtual environment is active. When you're done working on the project, you can deactivate the virtual environment:
 

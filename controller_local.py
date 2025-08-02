@@ -387,8 +387,7 @@ class CombinedLocalController:
                 # Setting a very short wait time to remain responsive but reduce CPU usage
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     self.video_enabled = False
-                
-                # Check connection status periodically
+
                 current_time = time.time()
                 if current_time - last_status_check > CONNECTION_CHECK_INTERVAL:
                     if time.time() - self.last_successful_send > CONNECTION_CHECK_INTERVAL:
@@ -398,15 +397,14 @@ class CombinedLocalController:
                             # Try to ping the server again
                             self.ping_server()
                     last_status_check = current_time
-                
-                # Sleep a tiny bit to avoid consuming too much CPU
+
                 time.sleep(0.01)
-                
+
         except KeyboardInterrupt:
             print("Interrupted by user")
         finally:
             self.stop()
-    
+
     def ping_server(self):
         """Send a ping message to test server connection."""
         try:
@@ -415,16 +413,16 @@ class CombinedLocalController:
             print(f"Ping sent to {self.server_ip}:{self.server_port}")
         except Exception as e:
             print(f"Error pinging server: {str(e)}")
-            
+
     def stop(self):
         """Stop the controller and clean up resources."""
         print("Stopping controller...")
         self.running = False
-        
+
         # Stop recording if active
         if self.recording:
             self.data_collector.stop_recording()
-        
+
         if hasattr(self, 'listener'):
             self.listener.stop()
         if hasattr(self, 'udp_socket'):
@@ -432,40 +430,39 @@ class CombinedLocalController:
         if hasattr(self, 'video_socket'):
             self.video_socket.close()
         cv2.destroyAllWindows()
-            
+
     def on_press(self, key):
         """Handle key press events."""
         # Check for special keys that don't have a char attribute first
         if key == keyboard.Key.up:
             # Increase throttle limit (max 1.0)
             self.throttle_limit = min(1.0, self.throttle_limit + 0.2)
-            self.throttle_limit = round(self.throttle_limit, 1)  # Round to nearest 0.1
+            self.throttle_limit = round(self.throttle_limit, 1)
             print(f"Throttle limit increased to {self.throttle_limit:.1f}")
             return
         elif key == keyboard.Key.down:
             # Decrease throttle limit (min 0.0)
             self.throttle_limit = max(0.0, self.throttle_limit - 0.2)
-            self.throttle_limit = round(self.throttle_limit, 1)  # Round to nearest 0.1
+            self.throttle_limit = round(self.throttle_limit, 1)
             print(f"Throttle limit decreased to {self.throttle_limit:.1f}")
             return
         elif key == keyboard.Key.left:
             # Decrease steering limit (min 0.0)
             self.steering_limit = max(0.0, self.steering_limit - 0.2)
-            self.steering_limit = round(self.steering_limit, 1)  # Round to nearest 0.1
+            self.steering_limit = round(self.steering_limit, 1)
             print(f"Steering limit decreased to {self.steering_limit:.1f}")
             return
         elif key == keyboard.Key.right:
             # Increase steering limit (max 1.0)
             self.steering_limit = min(1.0, self.steering_limit + 0.2)
-            self.steering_limit = round(self.steering_limit, 1)  # Round to nearest 0.1
+            self.steering_limit = round(self.steering_limit, 1)
             print(f"Steering limit increased to {self.steering_limit:.1f}")
             return
         elif key == keyboard.Key.esc:
             print("ESC pressed, stopping...")
             self.running = False
             return False
-        
-        # Then check for character keys
+
         try:
             if key.char == 'w':
                 self.key_w_pressed = True
@@ -494,9 +491,8 @@ class CombinedLocalController:
                 else:
                     print("Data recording stopped")
         except AttributeError:
-            # Key doesn't have a char attribute but wasn't handled above
             pass
-            
+
     def on_release(self, key):
         """Handle key release events."""
         try:
@@ -509,29 +505,44 @@ class CombinedLocalController:
             elif key.char == 'd':
                 self.key_d_pressed = False
         except AttributeError:
-            # Special key that doesn't have a char attribute
             pass
-        
-        # No need to stop on ESC key here since we handle it in on_press
-            
+
     def update_control_values(self):
-        """Update control values based on key states."""
-        # Handle throttle (W/S keys)
+        """Update controls based on keys with gradual acceleration"""
+        # Gradual throttle control (W/S keys)
+        # Increase/decrease by 0.05 every 0.1s based on key states
         if self.key_w_pressed and not self.key_s_pressed:
-            self.throttle = self.throttle_limit  # Apply throttle limit to forward motion
+            # Forward throttle - gradually increase
+            self.throttle = min(self.throttle_limit, self.throttle + 0.2)
         elif self.key_s_pressed and not self.key_w_pressed:
-            self.throttle = -self.throttle_limit  # Apply throttle limit to reverse motion
+            # Reverse throttle - gradually increase (negative)
+            self.throttle = max(-self.throttle_limit, self.throttle - 0.2)
         else:
-            self.throttle = IDLE_THROTTLE
-            
-        # Handle steering (A/D keys)
+            # No throttle key pressed - gradually return to idle
+            if self.throttle > 0:
+                self.throttle = max(IDLE_THROTTLE, self.throttle - 0.05)
+            elif self.throttle < 0:
+                self.throttle = min(IDLE_THROTTLE, self.throttle + 0.05)
+            else:
+                self.throttle = IDLE_THROTTLE
+
+        # Gradual steering control (A/D keys)
+        # Increase/decrease by 0.15 every 0.1s based on key states
         if self.key_a_pressed and not self.key_d_pressed:
-            self.angle = self.steering_limit  # Apply steering limit to left turning
+            # Left steering - gradually increase
+            self.angle = min(self.steering_limit, self.angle + 0.25)
         elif self.key_d_pressed and not self.key_a_pressed:
-            self.angle = -self.steering_limit  # Apply steering limit to right turning
+            # Right steering - gradually increase (more negative)
+            self.angle = max(-self.steering_limit, self.angle - 0.25)
         else:
-            self.angle = 0.0
-            
+            # No steering key pressed - gradually return to center
+            if self.angle > 0:
+                self.angle = max(0.0, self.angle - 0.25)
+            elif self.angle < 0:
+                self.angle = min(0.0, self.angle + 0.25)
+            else:
+                self.angle = 0.0
+
     def send_command(self):
         """Send control command to the server via UDP."""
         try:
@@ -540,16 +551,15 @@ class CombinedLocalController:
                 'angle': self.angle,
                 'throttle': self.throttle
             }
-            
-            # Encode and send
+
             json_data = json.dumps(command).encode('utf-8')
-            self.udp_socket.sendto(json_data, (self.server_ip, self.server_port))
-            
-            # Update tracking
+            self.udp_socket.sendto(json_data,
+                                   (self.server_ip, self.server_port))
+
             self.last_successful_send = time.time()
             return True
         except socket.error as se:
-            if not self.connection_ok:  # Only print errors when connection status changes
+            if not self.connection_ok:
                 print(f"Network error: {str(se)}")
             self.connection_ok = False
             return False
@@ -557,104 +567,90 @@ class CombinedLocalController:
             print(f"Error sending command: {str(e)}")
             self.connection_ok = False
             return False
-    
+
     def response_receiver(self):
         """Thread that listens for server responses."""
         while self.running:
             try:
                 data, addr = self.udp_socket.recvfrom(1024)
                 response = json.loads(data.decode('utf-8'))
-                
-                # Update connection status
+
                 if not self.connection_ok:
                     print(f"Connection established with server at {addr}")
                     self.connection_ok = True
-                
+
                 self.received_response = True
-                # Uncomment to print every response (could be noisy)
                 # print(f"Server response: {response}")
             except socket.timeout:
-                # This is expected due to the socket timeout
                 pass
             except Exception as e:
-                if self.running:  # Only print errors if we're still supposed to be running
+                if self.running:
                     print(f"Error receiving response: {str(e)}")
             time.sleep(0.01)
-    
+
     def video_receiver(self):
         """Thread that receives video frames and puts them in a queue."""
-        print("Starting video receiver...")
-        
+        print("Starting video receiver...")  
         while self.running:
             try:
-                # Receive video data (this is OK to do in a thread)
                 data, addr = self.video_socket.recvfrom(65535)
-                
-                # Decode the frame
                 np_data = np.frombuffer(data, dtype=np.uint8)
                 frame = cv2.imdecode(np_data, cv2.IMREAD_COLOR)
-                
-                # If valid frame, put in queue for main thread to display
+
                 if frame is not None:
-                    # Add to data collector if recording
                     if self.recording:
                         self.data_collector.add_frame(frame)
-                        
-                    # Add to display queue if video enabled
+
                     if self.video_enabled:
-                        # Non-blocking put - drop frame if queue is full
                         try:
                             self.frame_queue.put(frame, block=False)
                         except queue.Full:
-                            # Just drop the frame if queue is full
                             pass
-                    
+
             except Exception as e:
-                if self.running:  # Only print errors if we're still supposed to be running
+                if self.running:
                     print(f"Error receiving video: {str(e)}")
-                time.sleep(0.1)  # Sleep a bit before retrying
-            
+                time.sleep(0.1)
+
     def command_sender(self):
         """Thread that continuously sends control commands."""
-        last_status_check = 0
         last_report_time = 0
-        send_interval = 0.1  # Send commands at 10Hz
-        
+        send_interval = 0.1
+
         while self.running:
             current_time = time.time()
-            
-            # Update and send control values
+
             self.update_control_values()
             success = self.send_command()
-            
-            # Add control values to data collector if recording
+
             if self.recording:
                 self.data_collector.add_control_signal(self.throttle, self.angle)
-            
-            # Print status at a reasonable rate to avoid flooding the console
+
             if success and (self.throttle != 0.0 or self.angle != 0.0) and (current_time - last_report_time > 0.5):
                 print(f"Sending: angle={self.angle}, throttle={self.throttle}")
                 last_report_time = current_time
-            
+
             time.sleep(send_interval)
+
 
 def main():
     if len(sys.argv) < 2:
         print("Usage: python controller_local.py <server_ip>")
         sys.exit(1)
-        
+
     server_ip = sys.argv[1]
     controller = CombinedLocalController(server_ip)
-    
+
     # Setup signal handler for clean shutdown on Ctrl+C
     def signal_handler(sig, frame):
         print("Ctrl+C pressed, shutting down...")
         controller.running = False
         sys.exit(0)
-    
+
     signal.signal(signal.SIGINT, signal_handler)
-    
+
     controller.start()
+
 
 if __name__ == '__main__':
     main() 

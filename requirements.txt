@@ -1,0 +1,20 @@
+# Core numerical / ML (pin <2 for PyTorch compatibility)
+numpy>=1.23,<2.0
+
+# Deep learning
+# Choose the right build (CPU/GPU) for your environment. For most users the
+# generic CPU wheel works; if you have a CUDA-enabled GPU install the matching
+# torch and torchvision versions instead.
+torch>=2.0
+torchvision>=0.15
+
+# Computer vision
+opencv-python>=4.8
+
+# Utilities
+pillow>=10.0
+pynput>=1.7
+tqdm>=4.64
+matplotlib>=3.6 
+# SSL certificates (fix macOS cert issues for urllib/request)
+certifi>=2024.0 
