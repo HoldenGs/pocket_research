@@ -55,7 +55,8 @@ def copy_video(session_dir: str, start_time: float) -> str:
         f for f in os.listdir(session_dir) if f.startswith("video.")
     ]
     if not vid_candidates:
-        raise FileNotFoundError(f"No video file found in {session_dir}")
+        print(f"Warning: No video file found in {session_dir}, skipping...")
+        return None
 
     video_file = vid_candidates[0]
     src_path = os.path.join(session_dir, video_file)
@@ -137,7 +138,11 @@ def main():
             continue
 
         # Copy/carry video into videos folder
-        copy_video(session, start_time)
+        video_path = copy_video(session, start_time)
+        
+        # Skip session if no video file was found
+        if video_path is None:
+            continue
 
         # Aggregate controls
         controls = aggregate_control_data(session)

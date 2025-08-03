@@ -71,7 +71,7 @@ def main():
         model, 
         train_loader, 
         val_loader, 
-        num_epochs=150,
+        num_epochs=300,
         lr=0.0005,  # Slightly lower learning rate
         steering_weight=20.0  # High weight for steering
     )
