@@ -9,22 +9,18 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from torchvision import transforms, models
 
-class UnweightedDataset(Dataset):
+class ImmediateAssociationDataset(Dataset):
     def __init__(self, video_dir, control_data_path, transform=None, 
-                 sequence_length=3, training_lag_ms=150, inference_lag_ms=150,
-                 balance_steering=True):
-        """Dataset with steering-aware sampling to fix steering collapse"""
+                 sequence_length=3, balance_steering=True):
+        """Dataset with IMMEDIATE temporal association (no lag compensation)"""
         
         self.video_dir = video_dir
         self.transform = transform
         self.sequence_length = sequence_length
-        self.training_lag_seconds = training_lag_ms / 1000.0
-        self.inference_lag_seconds = inference_lag_ms / 1000.0
-        self.total_lag_compensation = self.training_lag_seconds + self.inference_lag_seconds
         
-        print(f"Steering-Aware Dataset Configuration:")
+        print(f"🔬 IMMEDIATE ASSOCIATION Dataset Configuration:")
         print(f"  Sequence length: {sequence_length} frames")
-        print(f"  Total lag compensation: {self.total_lag_compensation:.3f}s")
+        print(f"  NO LAG COMPENSATION - immediate frame-to-control association")
         print(f"  Steering balancing: {balance_steering}")
         
         # Load control data
@@ -41,11 +37,11 @@ class UnweightedDataset(Dataset):
             self._create_steering_weights()
     
     def _process_data(self):
-        """Process videos to create frame sequences with predictive control"""
+        """Process videos with IMMEDIATE temporal association (no lag compensation)"""
         video_files = sorted([f for f in os.listdir(self.video_dir)
                              if f.endswith(('.mp4', '.avi')) and not f.startswith('._')])
         
-        for video_file in tqdm(video_files, desc="Processing videos (steering-aware)"):
+        for video_file in tqdm(video_files, desc="Processing videos (immediate association)"):
             video_path = os.path.join(self.video_dir, video_file)
             cap = cv2.VideoCapture(video_path)
             
@@ -82,19 +78,20 @@ class UnweightedDataset(Dataset):
             
             cap.release()
             
-            # Create temporal sequences
+            # Create temporal sequences with IMMEDIATE association
             for i in range(self.sequence_length - 1, len(frames)):
                 frame_sequence = frames[i - self.sequence_length + 1:i + 1]
                 current_timestamp = frame_timestamps[i]
                 
-                # Find future control signal
-                future_control_time = current_timestamp + self.total_lag_compensation
+                # 🔬 KEY CHANGE: Use IMMEDIATE temporal association
+                # Instead of: future_control_time = current_timestamp + lag_compensation
+                immediate_control_time = current_timestamp
                 
-                # Find closest control signal
-                time_diffs = np.abs(self.control_data[:, 0] - future_control_time)
+                # Find closest control signal to the CURRENT frame time
+                time_diffs = np.abs(self.control_data[:, 0] - immediate_control_time)
                 closest_idx = np.argmin(time_diffs)
                 
-                # Check alignment quality
+                # Check alignment quality (same threshold)
                 if time_diffs[closest_idx] > 0.2:
                     continue
                     
@@ -107,7 +104,7 @@ class UnweightedDataset(Dataset):
                 self.frame_sequences.append(frame_sequence)
                 self.controls.append(control_signal)
         
-        print(f"Created {len(self.frame_sequences)} temporal sequences")
+        print(f"Created {len(self.frame_sequences)} temporal sequences (immediate association)")
     
     def _create_steering_weights(self):
         """Create sampling weights to balance steering distribution"""
@@ -119,7 +116,7 @@ class UnweightedDataset(Dataset):
         light_turn = (abs_steering >= 0.1) & (abs_steering < 0.3)
         sharp_turn = abs_steering >= 0.3
         
-        print(f"\nSteering Distribution:")
+        print(f"\nSteering Distribution (Immediate Association):")
         print(f"  Straight driving: {np.sum(straight)} samples ({100*np.sum(straight)/len(steering_values):.1f}%)")
         print(f"  Light turns: {np.sum(light_turn)} samples ({100*np.sum(light_turn)/len(steering_values):.1f}%)")
         print(f"  Sharp turns: {np.sum(sharp_turn)} samples ({100*np.sum(sharp_turn)/len(steering_values):.1f}%)")
@@ -172,17 +169,32 @@ class SteeringAwareLoss(nn.Module):
         # Standard MSE for throttle
         throttle_loss = torch.mean((throttle_pred - throttle_true)**2)
         
-        steering_loss = torch.mean((steering_pred - steering_true)**2)
+        # Steering-magnitude-aware loss
+        abs_steering_true = torch.abs(steering_true)
         
-        total_loss = steering_loss + throttle_loss
+        # Higher weights for larger steering angles
+        steering_weights = torch.where(
+            abs_steering_true < 0.1, 1.0,  # Normal weight for straight
+            torch.where(
+                abs_steering_true < 0.3, 3.0,  # 3x weight for light turns
+                8.0  # 8x weight for sharp turns
+            )
+        )
+        
+        steering_loss = torch.mean(steering_weights * (steering_pred - steering_true)**2)
+        
+        # Combine losses
+        total_loss = self.steering_weight_multiplier * steering_loss + throttle_loss
         
         return total_loss, steering_loss, throttle_loss
 
-def train_steering_aware_model():
-    """Train a model that properly handles steering"""
+def train_immediate_association_model():
+    """Train a model with IMMEDIATE temporal association (no lag compensation)"""
     
-    print("🎯 TRAINING LSTM MODEL")
-    print("=" * 50)
+    print("🔬 TRAINING IMMEDIATE ASSOCIATION MODEL")
+    print("=" * 60)
+    print("Testing: Does immediate frame-to-control association work better?")
+    print("=" * 60)
     
     # Data setup
     transform = transforms.Compose([
@@ -192,8 +204,8 @@ def train_steering_aware_model():
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
     
-    # Create steering-aware dataset
-    dataset = UnweightedDataset(
+    # Create immediate association dataset
+    dataset = ImmediateAssociationDataset(
         'data/videos', 'data/control_signals.npy', transform=transform,
         sequence_length=3, balance_steering=True
     )
@@ -207,13 +219,21 @@ def train_steering_aware_model():
         dataset, [train_size, val_size, test_size])
     
     # Create data loaders with balanced sampling
-    train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True, num_workers=4)
+    sampler = dataset.get_sampler()
+    if sampler:
+        # Use weighted sampler for training
+        train_indices = train_dataset.indices
+        train_weights = [dataset.steering_weights[i] for i in train_indices]
+        train_sampler = WeightedRandomSampler(train_weights, len(train_weights))
+        train_loader = DataLoader(train_dataset, batch_size=64, sampler=train_sampler, num_workers=4)
+    else:
+        train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True, num_workers=4)
     
     val_loader = DataLoader(val_dataset, batch_size=64, shuffle=False, num_workers=4)
     test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False, num_workers=4)
     
-    # Model setup
-    class SteeringFixedTemporalModel(nn.Module):
+    # Model setup (identical to steering-fixed model)
+    class ImmediateAssociationModel(nn.Module):
         def __init__(self, sequence_length=3):
             super().__init__()
             self.sequence_length = sequence_length
@@ -262,12 +282,14 @@ def train_steering_aware_model():
             
             return control_output
     
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = SteeringFixedTemporalModel(sequence_length=3).to(device)
+    # Use GPU 1 (second 3090) to avoid interfering with other training
+    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+    print(f"🎯 Using device: {device}")
+    model = ImmediateAssociationModel(sequence_length=3).to(device)
     
-    # Training setup
-    criterion = SteeringAwareLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.0005, weight_decay=1e-4)  # Lower LR, weight decay
+    # Training setup (identical parameters)
+    criterion = SteeringAwareLoss(steering_weight_multiplier=3.0)
+    optimizer = optim.Adam(model.parameters(), lr=0.0005, weight_decay=1e-4)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=8, factor=0.7)
     
     # Training loop
@@ -335,7 +357,7 @@ def train_steering_aware_model():
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             patience_counter = 0
-            torch.save(model.state_dict(), 'models/lstm_no_steering_weight.pth')
+            torch.save(model.state_dict(), 'models/immediate_association_model.pth')
         else:
             patience_counter += 1
             
@@ -344,7 +366,7 @@ def train_steering_aware_model():
             break
     
     # Load best model and evaluate
-    model.load_state_dict(torch.load('models/lstm_no_steering_weight.pth'))
+    model.load_state_dict(torch.load('models/immediate_association_model.pth'))
     
     # Plot and save comprehensive training curves
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 10))
@@ -354,7 +376,7 @@ def train_steering_aware_model():
     ax1.plot(val_losses, label='Validation Loss', color='red', linewidth=2)
     ax1.set_xlabel('Epoch')
     ax1.set_ylabel('Total Loss')
-    ax1.set_title('Overall Training Progress')
+    ax1.set_title('Overall Training Progress (Immediate Association)')
     ax1.legend()
     ax1.grid(True, alpha=0.3)
     
@@ -391,13 +413,13 @@ def train_steering_aware_model():
         ax4.set_ylim(0, 1)
     
     plt.tight_layout()
-    plt.savefig('lstm_no_steering_weight.png', dpi=300, bbox_inches='tight')
+    plt.savefig('training_curve_immediate_association.png', dpi=300, bbox_inches='tight')
     plt.close()
     
-    print(f"📈 Training curves saved as: training_curve_lstm_no_steering_weight.png")
+    print(f"📈 Training curves saved as: training_curve_immediate_association.png")
     
-    print(f"\n🎯 EVALUATING LSTM MODEL")
-    print("=" * 40)
+    print(f"\n🔬 EVALUATING IMMEDIATE ASSOCIATION MODEL")
+    print("=" * 50)
     
     # Test the model and analyze steering predictions
     model.eval()
@@ -427,7 +449,7 @@ def train_steering_aware_model():
     steering_errors = np.abs(predicted_steering - true_steering)
     throttle_errors = np.abs(predicted_throttle - true_throttle)
     
-    print(f"STEERING ANALYSIS:")
+    print(f"STEERING ANALYSIS (Immediate Association):")
     print(f"  Mean error: {np.mean(steering_errors):.4f}")
     print(f"  Predicted std: {predicted_steering.std():.4f}")
     print(f"  True std: {true_steering.std():.4f}")
@@ -439,7 +461,7 @@ def train_steering_aware_model():
     
     # Check if steering collapse is fixed
     steering_variation_ratio = predicted_steering.std() / true_steering.std()
-    print(f"\nSTEERING COLLAPSE CHECK:")
+    print(f"\nSTEERING COLLAPSE CHECK (Immediate Association):")
     if steering_variation_ratio > 0.7:
         print(f"  ✅ STEERING FIXED! Variation ratio: {steering_variation_ratio:.3f}")
         print(f"  Model shows good steering diversity")
@@ -459,7 +481,7 @@ def train_steering_aware_model():
     
     # Steering error histogram with steering magnitude analysis
     ax1.hist(steering_errors, bins=50, alpha=0.7, color='blue', edgecolor='black', density=True)
-    ax1.set_title('Steering Error Distribution (LSTM)', fontsize=14, fontweight='bold')
+    ax1.set_title('Steering Error Distribution (Immediate Association)', fontsize=14, fontweight='bold')
     ax1.set_xlabel('Absolute Steering Error')
     ax1.set_ylabel('Density')
     ax1.axvline(np.mean(steering_errors), color='red', linestyle='--', linewidth=2, 
@@ -473,7 +495,7 @@ def train_steering_aware_model():
     
     # Throttle error histogram
     ax2.hist(throttle_errors, bins=50, alpha=0.7, color='green', edgecolor='black', density=True)
-    ax2.set_title('Throttle Error Distribution (LSTM)', fontsize=14, fontweight='bold')
+    ax2.set_title('Throttle Error Distribution (Immediate Association)', fontsize=14, fontweight='bold')
     ax2.set_xlabel('Absolute Throttle Error')
     ax2.set_ylabel('Density')
     ax2.axvline(np.mean(throttle_errors), color='red', linestyle='--', linewidth=2,
@@ -490,7 +512,7 @@ def train_steering_aware_model():
     ax3.plot([-1, 1], [-1, 1], 'r--', linewidth=2, label='Perfect Prediction')
     ax3.set_xlabel('True Steering')
     ax3.set_ylabel('Predicted Steering')
-    ax3.set_title('Steering Prediction Quality', fontsize=14, fontweight='bold')
+    ax3.set_title('Steering Prediction Quality (Immediate Association)', fontsize=14, fontweight='bold')
     ax3.legend()
     ax3.grid(True, alpha=0.3)
     ax3.set_xlim(-1, 1)
@@ -506,7 +528,7 @@ def train_steering_aware_model():
     ax4.scatter(abs_true_steering, steering_errors, alpha=0.6, s=10, color='red')
     ax4.set_xlabel('True Steering Magnitude |steering|')
     ax4.set_ylabel('Steering Error')
-    ax4.set_title('Error vs Steering Magnitude (Collapse Check)', fontsize=14, fontweight='bold')
+    ax4.set_title('Error vs Steering Magnitude (Immediate Association)', fontsize=14, fontweight='bold')
     ax4.grid(True, alpha=0.3)
     
     # Add trend line
@@ -532,12 +554,12 @@ def train_steering_aware_model():
                    label=f'Sharp turn error: {mean_error_sharp:.3f}')
     
     plt.tight_layout()
-    plt.savefig('error_distributions_lstm_no_steering_weight.png', dpi=300, bbox_inches='tight')
+    plt.savefig('error_distributions_immediate_association.png', dpi=300, bbox_inches='tight')
     plt.close()
     
     # Print detailed steering analysis by category
-    print(f"\n🎯 STEERING PERFORMANCE BY CATEGORY:")
-    print(f"=" * 40)
+    print(f"\n🎯 STEERING PERFORMANCE BY CATEGORY (Immediate Association):")
+    print(f"=" * 60)
     
     if np.any(straight_mask):
         straight_errors = steering_errors[straight_mask]
@@ -560,8 +582,16 @@ def train_steering_aware_model():
         print(f"  Mean error: {np.mean(sharp_errors):.4f}")
         print(f"  Std error: {np.std(sharp_errors):.4f}")
     
-    print(f"\n📈 Error distribution plots saved as: error_distributions_lstm_no_steering_weight.png")
-    print(f"🏁 Model saved as: models/lstm_no_steering_weight.pth")
+    print(f"\n📈 Error distribution plots saved as: error_distributions_immediate_association.png")
+    print(f"🏁 Model saved as: models/immediate_association_model.pth")
+    
+    print(f"\n🔬 EXPERIMENT COMPLETE!")
+    print(f"Compare this model's performance with the lag-compensated model")
+    print(f"Key metrics to compare:")
+    print(f"  1. Steering variation ratio: {steering_variation_ratio:.3f}")
+    print(f"  2. Mean steering error: {np.mean(steering_errors):.4f}")
+    print(f"  3. Correlation coefficient: {correlation:.3f}")
+    print(f"  4. Best validation loss: {best_val_loss:.4f}")
 
 if __name__ == "__main__":
-    train_steering_aware_model() 
+    train_immediate_association_model() 
