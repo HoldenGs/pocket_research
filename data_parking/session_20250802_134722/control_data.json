@@ -1,0 +1,902 @@
+[
+  {
+    "timestamp": 1754167642.099561,
+    "throttle": 0.0,
+    "steering": 0.0,
+    "frame_idx": 0
+  },
+  {
+    "timestamp": 1754167642.203943,
+    "throttle": 0.2,
+    "steering": 0.0,
+    "frame_idx": 1
+  },
+  {
+    "timestamp": 1754167642.3091562,
+    "throttle": 0.4,
+    "steering": 0.0,
+    "frame_idx": 2
+  },
+  {
+    "timestamp": 1754167642.414345,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 3
+  },
+  {
+    "timestamp": 1754167642.519499,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 4
+  },
+  {
+    "timestamp": 1754167642.6246789,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 6
+  },
+  {
+    "timestamp": 1754167642.725735,
+    "throttle": 0.6,
+    "steering": -0.25,
+    "frame_idx": 7
+  },
+  {
+    "timestamp": 1754167642.8309271,
+    "throttle": 0.6,
+    "steering": -0.5,
+    "frame_idx": 8
+  },
+  {
+    "timestamp": 1754167642.936121,
+    "throttle": 0.6,
+    "steering": -0.25,
+    "frame_idx": 10
+  },
+  {
+    "timestamp": 1754167643.04128,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 10
+  },
+  {
+    "timestamp": 1754167643.145921,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 12
+  },
+  {
+    "timestamp": 1754167643.251115,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 12
+  },
+  {
+    "timestamp": 1754167643.3538811,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 14
+  },
+  {
+    "timestamp": 1754167643.4589078,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 15
+  },
+  {
+    "timestamp": 1754167643.563334,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 16
+  },
+  {
+    "timestamp": 1754167643.667339,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 17
+  },
+  {
+    "timestamp": 1754167643.7701151,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 18
+  },
+  {
+    "timestamp": 1754167643.8753011,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 20
+  },
+  {
+    "timestamp": 1754167643.980361,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 21
+  },
+  {
+    "timestamp": 1754167644.084063,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 22
+  },
+  {
+    "timestamp": 1754167644.189269,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 23
+  },
+  {
+    "timestamp": 1754167644.2915,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 25
+  },
+  {
+    "timestamp": 1754167644.395909,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 26
+  },
+  {
+    "timestamp": 1754167644.499756,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 27
+  },
+  {
+    "timestamp": 1754167644.603935,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 28
+  },
+  {
+    "timestamp": 1754167644.709099,
+    "throttle": 0.6,
+    "steering": 0.25,
+    "frame_idx": 29
+  },
+  {
+    "timestamp": 1754167644.809388,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 30
+  },
+  {
+    "timestamp": 1754167644.914558,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 31
+  },
+  {
+    "timestamp": 1754167645.0197241,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 32
+  },
+  {
+    "timestamp": 1754167645.124911,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 33
+  },
+  {
+    "timestamp": 1754167645.230075,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 34
+  },
+  {
+    "timestamp": 1754167645.334056,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 36
+  },
+  {
+    "timestamp": 1754167645.439222,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 37
+  },
+  {
+    "timestamp": 1754167645.544412,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 38
+  },
+  {
+    "timestamp": 1754167645.649578,
+    "throttle": 0.6,
+    "steering": 0.25,
+    "frame_idx": 39
+  },
+  {
+    "timestamp": 1754167645.754718,
+    "throttle": 0.6,
+    "steering": 0.5,
+    "frame_idx": 40
+  },
+  {
+    "timestamp": 1754167645.859861,
+    "throttle": 0.6,
+    "steering": 0.25,
+    "frame_idx": 42
+  },
+  {
+    "timestamp": 1754167645.9650078,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 43
+  },
+  {
+    "timestamp": 1754167646.070275,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 44
+  },
+  {
+    "timestamp": 1754167646.173294,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 46
+  },
+  {
+    "timestamp": 1754167646.274857,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 47
+  },
+  {
+    "timestamp": 1754167646.380029,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 48
+  },
+  {
+    "timestamp": 1754167646.4832268,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 49
+  },
+  {
+    "timestamp": 1754167646.5878358,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 50
+  },
+  {
+    "timestamp": 1754167646.691482,
+    "throttle": 0.6,
+    "steering": 0.25,
+    "frame_idx": 51
+  },
+  {
+    "timestamp": 1754167646.793612,
+    "throttle": 0.6,
+    "steering": 0.5,
+    "frame_idx": 52
+  },
+  {
+    "timestamp": 1754167646.8987782,
+    "throttle": 0.6,
+    "steering": 0.25,
+    "frame_idx": 54
+  },
+  {
+    "timestamp": 1754167647.002645,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 55
+  },
+  {
+    "timestamp": 1754167647.103621,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 57
+  },
+  {
+    "timestamp": 1754167647.20879,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 58
+  },
+  {
+    "timestamp": 1754167647.3128572,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 59
+  },
+  {
+    "timestamp": 1754167647.418029,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 60
+  },
+  {
+    "timestamp": 1754167647.523173,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 61
+  },
+  {
+    "timestamp": 1754167647.6283588,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 62
+  },
+  {
+    "timestamp": 1754167647.731064,
+    "throttle": 0.6,
+    "steering": 0.25,
+    "frame_idx": 63
+  },
+  {
+    "timestamp": 1754167647.8362198,
+    "throttle": 0.6,
+    "steering": 0.5,
+    "frame_idx": 64
+  },
+  {
+    "timestamp": 1754167647.9392068,
+    "throttle": 0.6,
+    "steering": 0.25,
+    "frame_idx": 66
+  },
+  {
+    "timestamp": 1754167648.0415099,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 66
+  },
+  {
+    "timestamp": 1754167648.145709,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 68
+  },
+  {
+    "timestamp": 1754167648.2459671,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 69
+  },
+  {
+    "timestamp": 1754167648.347957,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 71
+  },
+  {
+    "timestamp": 1754167648.451933,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 72
+  },
+  {
+    "timestamp": 1754167648.5570629,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 73
+  },
+  {
+    "timestamp": 1754167648.662242,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 74
+  },
+  {
+    "timestamp": 1754167648.767052,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 76
+  },
+  {
+    "timestamp": 1754167648.867792,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 77
+  },
+  {
+    "timestamp": 1754167648.9725308,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 78
+  },
+  {
+    "timestamp": 1754167649.077696,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 79
+  },
+  {
+    "timestamp": 1754167649.182954,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 81
+  },
+  {
+    "timestamp": 1754167649.2873979,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 82
+  },
+  {
+    "timestamp": 1754167649.391493,
+    "throttle": 0.6,
+    "steering": 0.25,
+    "frame_idx": 83
+  },
+  {
+    "timestamp": 1754167649.49498,
+    "throttle": 0.6,
+    "steering": 0.5,
+    "frame_idx": 84
+  },
+  {
+    "timestamp": 1754167649.59986,
+    "throttle": 0.6,
+    "steering": 0.25,
+    "frame_idx": 85
+  },
+  {
+    "timestamp": 1754167649.7040331,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 87
+  },
+  {
+    "timestamp": 1754167649.809006,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 88
+  },
+  {
+    "timestamp": 1754167649.914171,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 89
+  },
+  {
+    "timestamp": 1754167650.016872,
+    "throttle": 0.6,
+    "steering": 0.25,
+    "frame_idx": 90
+  },
+  {
+    "timestamp": 1754167650.122009,
+    "throttle": 0.6,
+    "steering": 0.5,
+    "frame_idx": 91
+  },
+  {
+    "timestamp": 1754167650.224712,
+    "throttle": 0.6,
+    "steering": 0.75,
+    "frame_idx": 92
+  },
+  {
+    "timestamp": 1754167650.327678,
+    "throttle": 0.6,
+    "steering": 0.5,
+    "frame_idx": 93
+  },
+  {
+    "timestamp": 1754167650.432377,
+    "throttle": 0.6,
+    "steering": 0.25,
+    "frame_idx": 95
+  },
+  {
+    "timestamp": 1754167650.53741,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 95
+  },
+  {
+    "timestamp": 1754167650.64258,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 97
+  },
+  {
+    "timestamp": 1754167650.7477891,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 98
+  },
+  {
+    "timestamp": 1754167650.852986,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 99
+  },
+  {
+    "timestamp": 1754167650.956922,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 100
+  },
+  {
+    "timestamp": 1754167651.062426,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 101
+  },
+  {
+    "timestamp": 1754167651.167615,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 102
+  },
+  {
+    "timestamp": 1754167651.271648,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 104
+  },
+  {
+    "timestamp": 1754167651.37492,
+    "throttle": 0.6,
+    "steering": 0.25,
+    "frame_idx": 105
+  },
+  {
+    "timestamp": 1754167651.47906,
+    "throttle": 0.6,
+    "steering": 0.5,
+    "frame_idx": 106
+  },
+  {
+    "timestamp": 1754167651.582444,
+    "throttle": 0.6,
+    "steering": 0.25,
+    "frame_idx": 108
+  },
+  {
+    "timestamp": 1754167651.687422,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 108
+  },
+  {
+    "timestamp": 1754167651.79207,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 110
+  },
+  {
+    "timestamp": 1754167651.897187,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 111
+  },
+  {
+    "timestamp": 1754167652.00229,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 112
+  },
+  {
+    "timestamp": 1754167652.102815,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 113
+  },
+  {
+    "timestamp": 1754167652.2064588,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 114
+  },
+  {
+    "timestamp": 1754167652.3080971,
+    "throttle": 0.6,
+    "steering": 0.25,
+    "frame_idx": 116
+  },
+  {
+    "timestamp": 1754167652.413307,
+    "throttle": 0.6,
+    "steering": 0.5,
+    "frame_idx": 117
+  },
+  {
+    "timestamp": 1754167652.516574,
+    "throttle": 0.6,
+    "steering": 0.75,
+    "frame_idx": 118
+  },
+  {
+    "timestamp": 1754167652.6207302,
+    "throttle": 0.6,
+    "steering": 1.0,
+    "frame_idx": 119
+  },
+  {
+    "timestamp": 1754167652.724917,
+    "throttle": 0.6,
+    "steering": 1.0,
+    "frame_idx": 120
+  },
+  {
+    "timestamp": 1754167652.830176,
+    "throttle": 0.6,
+    "steering": 0.75,
+    "frame_idx": 122
+  },
+  {
+    "timestamp": 1754167652.933871,
+    "throttle": 0.6,
+    "steering": 0.5,
+    "frame_idx": 123
+  },
+  {
+    "timestamp": 1754167653.039029,
+    "throttle": 0.6,
+    "steering": 0.25,
+    "frame_idx": 124
+  },
+  {
+    "timestamp": 1754167653.1393542,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 126
+  },
+  {
+    "timestamp": 1754167653.24452,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 127
+  },
+  {
+    "timestamp": 1754167653.349754,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 128
+  },
+  {
+    "timestamp": 1754167653.454883,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 129
+  },
+  {
+    "timestamp": 1754167653.56003,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 131
+  },
+  {
+    "timestamp": 1754167653.664316,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 132
+  },
+  {
+    "timestamp": 1754167653.765456,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 133
+  },
+  {
+    "timestamp": 1754167653.870039,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 134
+  },
+  {
+    "timestamp": 1754167653.973452,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 135
+  },
+  {
+    "timestamp": 1754167654.078631,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 136
+  },
+  {
+    "timestamp": 1754167654.181001,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 138
+  },
+  {
+    "timestamp": 1754167654.286133,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 139
+  },
+  {
+    "timestamp": 1754167654.387943,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 140
+  },
+  {
+    "timestamp": 1754167654.493129,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 141
+  },
+  {
+    "timestamp": 1754167654.5975099,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 142
+  },
+  {
+    "timestamp": 1754167654.7011662,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 144
+  },
+  {
+    "timestamp": 1754167654.806358,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 144
+  },
+  {
+    "timestamp": 1754167654.910549,
+    "throttle": 0.6,
+    "steering": 0.25,
+    "frame_idx": 146
+  },
+  {
+    "timestamp": 1754167655.0156622,
+    "throttle": 0.6,
+    "steering": 0.5,
+    "frame_idx": 147
+  },
+  {
+    "timestamp": 1754167655.120807,
+    "throttle": 0.6,
+    "steering": 0.75,
+    "frame_idx": 148
+  },
+  {
+    "timestamp": 1754167655.221979,
+    "throttle": 0.6,
+    "steering": 0.5,
+    "frame_idx": 149
+  },
+  {
+    "timestamp": 1754167655.324951,
+    "throttle": 0.6,
+    "steering": 0.25,
+    "frame_idx": 150
+  },
+  {
+    "timestamp": 1754167655.4301639,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 151
+  },
+  {
+    "timestamp": 1754167655.535331,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 153
+  },
+  {
+    "timestamp": 1754167655.63921,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 154
+  },
+  {
+    "timestamp": 1754167655.742985,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 155
+  },
+  {
+    "timestamp": 1754167655.846709,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 157
+  },
+  {
+    "timestamp": 1754167655.950419,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 158
+  },
+  {
+    "timestamp": 1754167656.055565,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 159
+  },
+  {
+    "timestamp": 1754167656.1607199,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 160
+  },
+  {
+    "timestamp": 1754167656.263401,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 161
+  },
+  {
+    "timestamp": 1754167656.36857,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 163
+  },
+  {
+    "timestamp": 1754167656.471772,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 164
+  },
+  {
+    "timestamp": 1754167656.576969,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 165
+  },
+  {
+    "timestamp": 1754167656.680348,
+    "throttle": 0.6,
+    "steering": 0.25,
+    "frame_idx": 166
+  },
+  {
+    "timestamp": 1754167656.785559,
+    "throttle": 0.6,
+    "steering": 0.5,
+    "frame_idx": 167
+  },
+  {
+    "timestamp": 1754167656.889167,
+    "throttle": 0.6,
+    "steering": 0.75,
+    "frame_idx": 168
+  },
+  {
+    "timestamp": 1754167656.99162,
+    "throttle": 0.6,
+    "steering": 0.5,
+    "frame_idx": 169
+  },
+  {
+    "timestamp": 1754167657.095766,
+    "throttle": 0.6,
+    "steering": 0.25,
+    "frame_idx": 171
+  },
+  {
+    "timestamp": 1754167657.20093,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 172
+  },
+  {
+    "timestamp": 1754167657.306069,
+    "throttle": 0.6,
+    "steering": 0.0,
+    "frame_idx": 173
+  },
+  {
+    "timestamp": 1754167657.4112132,
+    "throttle": 0.5499999999999999,
+    "steering": 0.0,
+    "frame_idx": 174
+  },
+  {
+    "timestamp": 1754167657.51379,
+    "throttle": 0.49999999999999994,
+    "steering": 0.0,
+    "frame_idx": 175
+  },
+  {
+    "timestamp": 1754167657.6189451,
+    "throttle": 0.44999999999999996,
+    "steering": 0.0,
+    "frame_idx": 176
+  }
+]

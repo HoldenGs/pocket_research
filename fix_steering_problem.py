@@ -124,16 +124,15 @@ class SteeringAwareDataset(Dataset):
         print(f"  Light turns: {np.sum(light_turn)} samples ({100*np.sum(light_turn)/len(steering_values):.1f}%)")
         print(f"  Sharp turns: {np.sum(sharp_turn)} samples ({100*np.sum(sharp_turn)/len(steering_values):.1f}%)")
         
-        # Create balanced weights
         weights = np.ones(len(steering_values))
         
         # Weight inversely proportional to category frequency
         if np.sum(straight) > 0:
-            weights[straight] = 1.0  # Base weight for straight
+            weights[straight] = 1.0
         if np.sum(light_turn) > 0:
-            weights[light_turn] = 3.0  # 3x weight for light turns
+            weights[light_turn] = 3.0
         if np.sum(sharp_turn) > 0:
-            weights[sharp_turn] = 10.0  # 10x weight for sharp turns
+            weights[sharp_turn] = 10.0
             
         self.steering_weights = weights
         print(f"Applied steering-aware sampling weights")
