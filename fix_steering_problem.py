@@ -226,12 +226,12 @@ def train_steering_aware_model():
         train_indices = train_dataset.indices
         train_weights = [dataset.steering_weights[i] for i in train_indices]
         train_sampler = WeightedRandomSampler(train_weights, len(train_weights))
-        train_loader = DataLoader(train_dataset, batch_size=16, sampler=train_sampler, num_workers=4)
+        train_loader = DataLoader(train_dataset, batch_size=64, sampler=train_sampler, num_workers=4)
     else:
-        train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=4)
+        train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True, num_workers=4)
     
-    val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False, num_workers=4)
-    test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False, num_workers=4)
+    val_loader = DataLoader(val_dataset, batch_size=64, shuffle=False, num_workers=4)
+    test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False, num_workers=4)
     
     # Model setup
     class SteeringFixedTemporalModel(nn.Module):
