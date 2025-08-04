@@ -10,7 +10,9 @@ import cv2
 import numpy as np
 import queue
 import torch
+import torch.nn as nn
 import torchvision.transforms as transforms
+from torchvision import models
 from imitation_learning import RCCarModel
 from imitation_learning_temporal import TemporalRCCarModel
 
@@ -30,6 +32,57 @@ COLOR_THROTTLE_REVERSE = (0, 120, 240)
 COLOR_STEERING = (240, 180, 0)
 COLOR_GRID = (100, 100, 100)
 COLOR_PREDICTION = (0, 255, 255)  # Yellow for AI predictions
+
+
+class SteeringFixedTemporalModel(nn.Module):
+    """Steering-aware temporal model from fix_steering_problem.py"""
+    def __init__(self, sequence_length=3):
+        super().__init__()
+        self.sequence_length = sequence_length
+        
+        # CNN feature extractor
+        self.cnn_backbone = models.resnet18(pretrained=True)
+        self.cnn_backbone.fc = nn.Identity()
+        
+        # Temporal fusion
+        self.temporal_fusion = nn.LSTM(
+            input_size=512,
+            hidden_size=256,
+            num_layers=2,
+            batch_first=True,
+            dropout=0.2  # Moderate dropout for LSTM
+        )
+        
+        # Control prediction head with progressive dropout
+        self.control_head = nn.Sequential(
+            nn.Linear(256, 256),
+            nn.ReLU(),
+            nn.Dropout(0.3),  # Moderate dropout early layers
+            nn.Linear(256, 128),
+            nn.ReLU(),
+            nn.Dropout(0.2),  # Less dropout as we get more specific
+            nn.Linear(128, 64),
+            nn.ReLU(),
+            nn.Dropout(0.1),  # Minimal dropout near output
+            nn.Linear(64, 2)  # steering, throttle
+        )
+    
+    def forward(self, x):
+        batch_size, seq_len, channels, height, width = x.shape
+        
+        # Process frames through CNN
+        x = x.view(batch_size * seq_len, channels, height, width)
+        features = self.cnn_backbone(x)
+        features = features.view(batch_size, seq_len, -1)
+        
+        # Temporal processing
+        lstm_out, _ = self.temporal_fusion(features)
+        final_features = lstm_out[:, -1, :]
+        
+        # Control prediction
+        control_output = self.control_head(final_features)
+        
+        return control_output
 
 
 class InferenceController:
@@ -52,10 +105,12 @@ class InferenceController:
         self.last_video_frame = None
         
         # Model and inference setup
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device(
+            "cuda" if torch.cuda.is_available() else "cpu")
         self.model = None
         self.transform = None
         self.is_temporal_model = "temporal" in model_path.lower()
+        self.is_steering_fixed_model = "steering_fixed" in model_path.lower()
         self.sequence_length = 3  # For temporal models
         self.frame_buffer = []  # Store recent frames for temporal inference
         self.load_model()
@@ -87,9 +142,15 @@ class InferenceController:
         print(f"Loading model from {self.model_path}")
         
         # Choose model class based on model type
-        if self.is_temporal_model:
+        if self.is_steering_fixed_model:
+            print("Loading steering-fixed temporal model...")
+            self.model = SteeringFixedTemporalModel(
+                sequence_length=self.sequence_length)
+            self.is_temporal_model = True  # Steering-fixed is always temporal
+        elif self.is_temporal_model:
             print("Loading temporal model...")
-            self.model = TemporalRCCarModel(sequence_length=self.sequence_length)
+            self.model = TemporalRCCarModel(
+                sequence_length=self.sequence_length)
         else:
             print("Loading regular model...")
             self.model = RCCarModel()
@@ -108,8 +169,14 @@ class InferenceController:
                 mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])
         
-        model_type = "temporal" if self.is_temporal_model else "regular"
-        print(f"{model_type.capitalize()} model loaded successfully on device: {self.device}")
+        if self.is_steering_fixed_model:
+            model_type = "steering-fixed temporal"
+        elif self.is_temporal_model:
+            model_type = "temporal"
+        else:
+            model_type = "regular"
+        print(f"{model_type.capitalize()} model loaded successfully "
+              f"on device: {self.device}")
     
     def create_base_ui_frame(self):
         """Create the base UI frame with fixed elements."""
@@ -118,12 +185,12 @@ class InferenceController:
         
         # Draw separator line between video and telemetry areas
         cv2.line(frame, (0, UI_HEIGHT - TELEMETRY_HEIGHT), 
-                (UI_WIDTH, UI_HEIGHT - TELEMETRY_HEIGHT), COLOR_GRID, 2)
+                 (UI_WIDTH, UI_HEIGHT - TELEMETRY_HEIGHT), COLOR_GRID, 2)
         
         # Draw title
         title_y = UI_HEIGHT - TELEMETRY_HEIGHT + 25
         cv2.putText(frame, "AI Inference Controller", (20, title_y), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.9, COLOR_TEXT, 2)
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, COLOR_TEXT, 2)
         
         return frame
     
@@ -140,21 +207,30 @@ class InferenceController:
         if self.last_video_frame is not None:
             # Resize the video frame to fit the UI
             video_height = UI_HEIGHT - TELEMETRY_HEIGHT
-            video_width = int(self.last_video_frame.shape[1] * video_height / self.last_video_frame.shape[0])
+            video_shape = self.last_video_frame.shape
+            video_width = int(video_shape[1] * video_height / video_shape[0])
             
             # Center the video if it's smaller than the UI width
             if video_width < UI_WIDTH:
                 x_offset = (UI_WIDTH - video_width) // 2
-                resized_video = cv2.resize(self.last_video_frame, (video_width, video_height))
-                frame[0:video_height, x_offset:x_offset+video_width] = resized_video
+                resized_video = cv2.resize(
+                    self.last_video_frame, (video_width, video_height))
+                frame[0:video_height, 
+                      x_offset:x_offset+video_width] = resized_video
             else:
                 # If video is wider, resize to fit width and crop height
                 video_width = UI_WIDTH
-                video_height_scaled = int(self.last_video_frame.shape[0] * video_width / self.last_video_frame.shape[1])
-                resized_video = cv2.resize(self.last_video_frame, (video_width, video_height_scaled))
+                video_shape = self.last_video_frame.shape
+                video_height_scaled = int(
+                    video_shape[0] * video_width / video_shape[1])
+                resized_video = cv2.resize(
+                    self.last_video_frame, (video_width, video_height_scaled))
                 # Crop to fit
-                crop_y = (video_height_scaled - video_height) // 2 if video_height_scaled > video_height else 0
-                frame[0:video_height, 0:video_width] = resized_video[crop_y:crop_y+video_height, 0:video_width]
+                crop_y = ((video_height_scaled - video_height) // 2 
+                          if video_height_scaled > video_height else 0)
+                end_y = crop_y + video_height
+                frame[0:video_height, 0:video_width] = resized_video[
+                    crop_y:end_y, 0:video_width]
             
 
         
